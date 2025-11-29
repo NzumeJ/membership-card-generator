@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASBBIC - Membership Card Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">ASBBIC Membership</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">Admin Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row">
+            <!-- Form Section -->
+            <div class="col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Member Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="memberForm">
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="fullName" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="birthDate" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="birthDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="birthPlace" class="form-label">Place of Birth</label>
+                                    <input type="text" class="form-control" id="birthPlace" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="idNumber" class="form-label">ID Card Number</label>
+                                <input type="text" class="form-control" id="idNumber" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="activity" class="form-label">Business Activity</label>
+                                <input type="text" class="form-control" id="activity" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="photo" class="form-label">Upload Photo</label>
+                                <input type="file" class="form-control" id="photo" accept="image/*" required>
+                                <div class="form-text">Please upload a clear passport photo</div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Generate Card</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Preview Section -->
+            <div class="col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Card Preview</h4>
+                    </div>
+                    <div class="card-body d-flex justify-content-center">
+                        <div id="cardPreview" class="membership-card">
+                            <!-- Front of the card -->
+                            <div class="card-side front">
+                                <div class="card-header">
+                                    <div class="flag">🇨🇲</div>
+                                    <div class="title">
+                                        <div>ASSOCIATION DES FEMMES ENTREPRENEURES ET COMMERCANTES DU CAMEROUN</div>
+                                        <div>ASSOCIATION OF WOMEN ENTREPRENEURS AND TRADERS OF CAMEROON</div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="qr-code">
+                                        <div id="qrcode"></div>
+                                        <div class="scan-me">Scan me!</div>
+                                    </div>
+                                    <div class="website">
+                                        <i class="fas fa-globe"></i> Site web: https://asbbic.org
+                                    </div>
+                                    <div class="contact-info">
+                                        <div><i class="fas fa-envelope"></i> Email: asbbic2025@gmail.com</div>
+                                        <div><i class="fas fa-map-marker-alt"></i> B.P 6279 Douala - Cameroon</div>
+                                    </div>
+                                    <div class="logos">
+                                        <div class="logo">MIKPNEENA</div>
+                                        <div class="logo">Minader</div>
+                                        <div class="logo">MINFI</div>
+                                        <div class="logo">DG1</div>
+                                        <div class="logo">FONEFECC</div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="date">
+                                        <div>Date de delivrance: <span id="issueDate">November 2025</span></div>
+                                        <div>Lieu: <span id="issuePlace">Douala</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Back of the card -->
+                            <div class="card-side back">
+                                <div class="card-header">
+                                    <h3>CARTE DE MEMBRE ASBBIC</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="member-photo">
+                                        <img id="memberPhoto" src="" alt="Member Photo">
+                                    </div>
+                                    <div class="member-info">
+                                        <h2 id="previewName">MEMBER NAME</h2>
+                                        <div class="position">Membre</div>
+                                        <div class="info-item"><span>Né(e) le:</span> <span id="previewDob">01/01/1990</span></div>
+                                        <div class="info-item"><span>A:</span> <span id="previewBirthPlace">DOUALA</span></div>
+                                        <div class="info-item"><span>N° Carte id:</span> <span id="previewId">AA00000000</span></div>
+                                        <div class="info-item"><span>Activité:</span> <span id="previewActivity">BUSINESS ACTIVITY</span></div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="signature">
+                                        <div class="sign-line"></div>
+                                        <div class="sign-text">Président Fondatrice</div>
+                                    </div>
+                                    <div class="asbbic-logo">
+                                        <div class="logo-circle">
+                                            <span>ASBBIC</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type="button" id="previewBtn" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> Preview Card
+                        </button>
+                        <button type="submit" id="submitBtn" class="btn btn-success d-none ms-2">
+                            <i class="fas fa-paper-plane"></i> Submit for Approval
+                        </button>
+                        <button id="downloadCard" class="btn btn-outline-success ms-2 d-none" disabled>
+                            <i class="fas fa-download"></i> Download Card
+                        </button>
+                        <button id="printCard" class="btn btn-outline-primary ms-2 d-none" disabled>
+                            <i class="fas fa-print"></i> Print Card
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 ASBBIC - Tous droits réservés</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="/js/script.js"></script>
+</body>
+</html>

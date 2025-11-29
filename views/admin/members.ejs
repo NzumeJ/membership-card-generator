@@ -1,0 +1,264 @@
+<%- include('partials/header', { title: 'Members Management' }) %>
+
+<div class="container-fluid">
+    <div class="row">
+        <%- include('partials/sidebar') %>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Members</h1>
+                <a href="/admin/members/new" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Add New Member
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="membersTable" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- View Member Modal -->
+<div class="modal fade" id="viewMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Member Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="memberDetails">
+                <!-- Member details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+
+<!-- Custom CSS for members page -->
+<style>
+    .member-photo {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-approved { background-color: #d4edda; color: #155724; }
+    .status-rejected { background-color: #f8d7da; color: #721c24; }
+</style>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Check if DataTable is already initialized and destroy it
+    if ($.fn.DataTable.isDataTable('#membersTable')) {
+        $('#membersTable').DataTable().destroy();
+    }
+
+    // Initialize DataTable with AJAX loading
+    const membersTable = $('#membersTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '/api/members',
+            type: 'GET',
+            dataSrc: 'data'
+        },
+        columns: [
+            {
+                data: 'photo',
+                render: function(data) {
+                    return data ? 
+                        `<img src="${data}" class="member-photo" alt="Member Photo">` : 
+                        '<i class="fas fa-user-circle fa-2x text-muted"></i>';
+                },
+                orderable: false
+            },
+            { data: 'fullName' },
+            { data: 'email' },
+            { data: 'phone' },
+            {
+                data: 'status',
+                render: function(data) {
+                    const statusClass = {
+                        'pending': 'status-pending',
+                        'approved': 'status-approved',
+                        'rejected': 'status-rejected'
+                    }[data] || '';
+                    return `<span class="status-badge ${statusClass}">${data.charAt(0).toUpperCase() + data.slice(1)}</span>`;
+                }
+            },
+            {
+                data: '_id',
+                render: function(data, type, row) {
+                    return `
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-outline-primary view-member" data-id="${data}" title="View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success approve-member" data-id="${data}" title="Approve" ${row.status === 'approved' ? 'disabled' : ''}>
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger reject-member" data-id="${data}" title="Reject" ${row.status === 'rejected' ? 'disabled' : ''}>
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary print-card" data-id="${data}" title="Print Card" ${row.status !== 'approved' ? 'disabled' : ''}>
+                                <i class="fas fa-print"></i>
+                            </button>
+                        </div>
+                    `;
+                },
+                orderable: false
+            }
+        ],
+        order: [[1, 'asc']],
+        responsive: true
+    });
+
+    // Handle view member details
+    $(document).on('click', '.view-member', function() {
+        const memberId = $(this).data('id');
+        
+        // Show loading state
+        $('#memberDetails').html(`
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading member details...</p>
+            </div>
+        `);
+        
+        // Fetch member details
+        $.get(`/api/members/${memberId}`, function(member) {
+            const memberHtml = `
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4">
+                        ${member.photo ? 
+                            `<img src="${member.photo}" class="img-fluid rounded-circle mb-3" style="max-width: 200px;" alt="${member.fullName}">` : 
+                            '<i class="fas fa-user-circle fa-10x text-muted mb-3"></i>'}
+                        <h4>${member.fullName}</h4>
+                        <p class="text-muted">${member.memberId || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Email:</strong> ${member.email || 'N/A'}</p>
+                                <p><strong>Phone:</strong> ${member.phone || 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Birth Date:</strong> ${member.birthDate ? new Date(member.birthDate).toLocaleDateString() : 'N/A'}</p>
+                                <p><strong>Birth Place:</strong> ${member.birthPlace || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <p><strong>Activity:</strong> ${member.activity || 'N/A'}</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="status-badge ${member.status === 'approved' ? 'status-approved' : member.status === 'rejected' ? 'status-rejected' : 'status-pending'}">
+                                        ${member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : 'N/A'}
+                                    </span>
+                                </p>
+                                ${member.approvedAt ? 
+                                    `<p><strong>Approved On:</strong> ${new Date(member.approvedAt).toLocaleString()}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            $('#memberDetails').html(memberHtml);
+        }).fail(function() {
+            $('#memberDetails').html('<div class="alert alert-danger">Failed to load member details. Please try again.</div>');
+        });
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('viewMemberModal'));
+        modal.show();
+    });
+
+    // Handle approve member
+    $(document).on('click', '.approve-member', function() {
+        const memberId = $(this).data('id');
+        updateMemberStatus(memberId, 'approved');
+    });
+
+    // Handle reject member
+    $(document).on('click', '.reject-member', function() {
+        const memberId = $(this).data('id');
+        updateMemberStatus(memberId, 'rejected');
+    });
+
+    // Handle print card
+    $(document).on('click', '.print-card', function() {
+        const memberId = $(this).data('id');
+        window.open(`/admin/members/${memberId}/card`, '_blank');
+    });
+
+    // Function to update member status
+    function updateMemberStatus(memberId, status) {
+        if (!confirm(`Are you sure you want to ${status} this member?`)) {
+            return;
+        }
+
+        $.ajax({
+            url: `/api/members/${memberId}/status`,
+            type: 'PATCH',
+            data: { status },
+            success: function(response) {
+                // Show success message
+                const alert = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        Member ${status} successfully!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                $('.container-fluid').prepend(alert);
+                
+                // Reload the table
+                membersTable.ajax.reload();
+                
+                // Auto-hide the alert after 3 seconds
+                setTimeout(() => {
+                    $('.alert').fadeOut('slow', function() { $(this).remove(); });
+                }, 3000);
+            },
+            error: function(xhr) {
+                alert(`Error: ${xhr.responseJSON?.message || 'Failed to update member status'}`);
+            }
+        });
+    }
+});
+</script>

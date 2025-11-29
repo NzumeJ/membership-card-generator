@@ -1,0 +1,56 @@
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse bg-dark">
+    <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+            <img src="/images/logo.png" 
+                 alt="ASBBIC Logo" 
+                 class="img-fluid" 
+                 style="max-height: 80px; width: auto;"
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTkgMTRjMS40OS0xLjQ2IDIuMjItMy40OSAyLjIyLTUuNUMxOS4yMiA1LjA0IDE1LjQ2IDIgMTAgMlMxLjc4IDUuMDQgMS43OCA4LjVjMCAyLjAxLjczIDQuMDQgMi4yMiA1LjVMMTAgMjJsMTAtOHoiPjwvcGF0aD48L3N2Zz4='">
+            <h5 class="mt-2 text-white">ASBBIC</h5>
+            <p class="text-white-50 small mb-0">Admin Panel</p>
+        </div>
+        
+        <ul class="nav flex-column mb-auto">
+            <li class="nav-item">
+                <a class="nav-link text-white <%= path === '/admin/dashboard' ? 'active bg-primary' : 'text-white-50' %>" 
+                   href="/admin/dashboard">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white <%= path && path.startsWith('/admin/members') ? 'active bg-primary' : 'text-white-50' %>" 
+                   href="/admin/members">
+                    <i class="fas fa-users me-2"></i>
+                    Members
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-chart-bar"></i>
+                    Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+        
+        <div class="position-absolute bottom-0 start-0 w-100 p-3">
+            <div class="d-flex align-items-center">
+                <img src="https://ui-avatars.com/api/?name=<%= user.username %>&background=0D6EFD&color=fff" 
+                     alt="<%= user.username %>" 
+                     class="rounded-circle me-2" 
+                     width="40" 
+                     height="40">
+                <div>
+                    <div class="fw-bold text-white"><%= user.username %></div>
+                    <small class="text-white-50"><%= user.role %></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
