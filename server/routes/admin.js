@@ -51,27 +51,54 @@ router.get('/dashboard/recent-members', ensureAuthenticated, async (req, res) =>
 // Export members to CSV
 router.get('/members/export', ensureAuthenticated, async (req, res) => {
     try {
-        const members = await Member.find().lean();
+        const members = await Member.find().sort({ createdAt: -1 }).lean();
         
         // Convert to CSV
-        const fields = ['fullName', 'email', 'phone', 'idNumber', 'activity', 'status'];
+        const fields = [
+            'fullName', 
+            'email', 
+            'phone', 
+            'idNumber', 
+            'birthDate',
+            'birthPlace',
+            'activity', 
+            'status',
+            'createdAt'
+        ];
+        
         let csv = fields.join(',') + '\n';
         
         members.forEach(member => {
             let row = fields.map(field => {
+                let value = '';
+                
+                // Format date fields
+                if (field === 'birthDate' && member[field]) {
+                    value = new Date(member[field]).toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                } else if (field === 'createdAt' && member[field]) {
+                    value = new Date(member[field]).toISOString();
+                } else {
+                    value = String(member[field] || '');
+                }
+                
                 // Escape quotes and wrap in quotes
-                let value = String(member[field] || '').replace(/"/g, '""');
+                value = value.replace(/"/g, '""');
                 return `"${value}"`;
             }).join(',');
+            
             csv += row + '\n';
         });
 
+        // Set headers for file download
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `members-export-${timestamp}.csv`;
+        
         res.header('Content-Type', 'text/csv');
-        res.attachment('members-export.csv');
+        res.attachment(filename);
         return res.send(csv);
     } catch (err) {
         console.error('Error exporting members:', err);
-        res.status(500).json({ success: false, message: 'Error exporting members' });
+        res.status(500).json({ success: false, message: 'Error exporting members: ' + err.message });
     }
 });
 

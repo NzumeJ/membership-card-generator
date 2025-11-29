@@ -281,6 +281,91 @@ router.get("/:id", ensureAuthenticated, async (req, res) => {
 });
 
 // =========================
+// DELETE MEMBER
+// =========================
+router.delete("/:id", ensureAuthenticated, async (req, res) => {
+    try {
+        const member = await Member.findByIdAndDelete(req.params.id);
+        
+        if (!member) {
+            return res.status(404).json({
+                success: false,
+                message: "Member not found"
+            });
+        }
+
+        // If there's a photo, delete it from the filesystem
+        if (member.photo) {
+            const filePath = path.join(__dirname, '../../public', member.photo);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        return res.json({
+            success: true,
+            message: "Member deleted successfully"
+        });
+
+    } catch (err) {
+        console.error('Error deleting member:', err);
+        return res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
+    }
+});
+
+// =========================
+// DOWNLOAD MEMBER PHOTO
+// =========================
+router.get("/:id/photo", ensureAuthenticated, async (req, res) => {
+    try {
+        const member = await Member.findById(req.params.id);
+        
+        if (!member || !member.photo) {
+            return res.status(404).json({
+                success: false,
+                message: "Member or photo not found"
+            });
+        }
+
+        // Get the file extension from the photo path
+        const fileExt = path.extname(member.photo).toLowerCase();
+        const fileName = `${member.fullName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}${fileExt}`;
+        const filePath = path.join(__dirname, '../../public', member.photo);
+
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({
+                success: false,
+                message: "Photo file not found"
+            });
+        }
+
+        // Set headers for file download
+        res.download(filePath, fileName, (err) => {
+            if (err) {
+                console.error('Error downloading file:', err);
+                if (!res.headersSent) {
+                    res.status(500).json({
+                        success: false,
+                        message: "Error downloading photo"
+                    });
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error('Error in photo download:', err);
+        return res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
+    }
+});
+
+// =========================
 // UPDATE MEMBER STATUS
 // =========================
 router.patch("/:id/status", ensureAuthenticated, async (req, res) => {

@@ -144,8 +144,11 @@ $(document).ready(function() {
                             <button class="btn btn-sm btn-outline-danger reject-member" data-id="${data}" title="Reject" ${row.status === 'rejected' ? 'disabled' : ''}>
                                 <i class="fas fa-times"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-secondary print-card" data-id="${data}" title="Print Card" ${row.status !== 'approved' ? 'disabled' : ''}>
-                                <i class="fas fa-print"></i>
+                            <button class="btn btn-sm btn-outline-info download-photo" data-id="${data}" title="Download Photo" ${!row.photo ? 'disabled' : ''}>
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-member" data-id="${data}" title="Delete Member">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     `;
@@ -237,6 +240,49 @@ $(document).ready(function() {
     $(document).on('click', '.print-card', function() {
         const memberId = $(this).data('id');
         window.open(`/admin/members/${memberId}/card`, '_blank');
+    });
+
+    // Handle download photo
+    $(document).on('click', '.download-photo', function(e) {
+        e.preventDefault();
+        const memberId = $(this).data('id');
+        // Trigger photo download
+        window.location.href = `/api/members/${memberId}/photo`;
+    });
+
+    // Handle delete member
+    $(document).on('click', '.delete-member', function() {
+        const memberId = $(this).data('id');
+        
+        if (!confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+            return;
+        }
+
+        const $button = $(this);
+        $button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+        $.ajax({
+            url: `/api/members/${memberId}`,
+            type: 'DELETE',
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    alert('Member deleted successfully');
+                    // Reload the DataTable to reflect the changes
+                    if ($.fn.DataTable.isDataTable('#membersTable')) {
+                        $('#membersTable').DataTable().ajax.reload();
+                    }
+                } else {
+                    alert('Error: ' + (response.message || 'Failed to delete member'));
+                    $button.prop('disabled', false).html('<i class="fas fa-trash"></i>');
+                }
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON?.message || 'Failed to delete member';
+                alert('Error: ' + errorMsg);
+                $button.prop('disabled', false).html('<i class="fas fa-trash"></i>');
+            }
+        });
     });
 
     // Function to update member status
