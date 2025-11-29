@@ -11,7 +11,9 @@
                 <h1 class="h2">Dashboard</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <div class="btn-group me-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary btn-export">
+                            <i class="fas fa-download me-1"></i> Export
+                        </button>
                     </div>
                     <a href="/admin/members/new" class="btn btn-sm btn-primary">
                         <i class="fas fa-plus"></i> Add Member
@@ -112,5 +114,72 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch dashboard stats
+    fetch('/admin/dashboard/stats', {
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('totalMembers').textContent = data.stats.totalMembers;
+            document.getElementById('activeMembers').textContent = data.stats.activeMembers;
+            document.getElementById('newMembers').textContent = data.stats.newMembers;
+        }
+    })
+    .catch(error => console.error('Error:', error));
+
+    // Fetch recent members
+    fetch('/admin/dashboard/recent-members', {
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = document.querySelector('#membersTable tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            data.members.forEach(member => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const date = new Date(member.createdAt).toLocaleDateString();
+                
+                // Status badge
+                let statusBadge = '';
+                if (member.status === 'approved') {
+                    statusBadge = '<span class="badge bg-success">Approved</span>';
+                } else if (member.status === 'rejected') {
+                    statusBadge = '<span class="badge bg-danger">Rejected</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-warning">Pending</span>';
+                }
+
+                row.innerHTML = `
+                    <td>${member._id}</td>
+                    <td>${member.fullName || 'N/A'}</td>
+                    <td>${member.idNumber || 'N/A'}</td>
+                    <td>${member.activity || 'N/A'}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <a href="/admin/members/${member._id}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error));
+
+    // Set up export button
+    document.querySelector('.btn-export')?.addEventListener('click', function() {
+        window.location.href = '/admin/members/export';
+    });
+});
+</script>
 
 <%- include('partials/footer') %>

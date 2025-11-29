@@ -172,7 +172,9 @@ $(document).ready(function() {
         `);
         
         // Fetch member details
-        $.get(`/api/members/${memberId}`, function(member) {
+        $.get(`/api/members/${memberId}`, function(response) {
+            // Access the member data from the response
+            const member = response.member || response;
             const memberHtml = `
                 <div class="row">
                     <div class="col-md-4 text-center mb-4">
@@ -197,8 +199,8 @@ $(document).ready(function() {
                             <div class="col-12">
                                 <p><strong>Activity:</strong> ${member.activity || 'N/A'}</p>
                                 <p><strong>Status:</strong> 
-                                    <span class="status-badge ${member.status === 'approved' ? 'status-approved' : member.status === 'rejected' ? 'status-rejected' : 'status-pending'}">
-                                        ${member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : 'N/A'}
+                                    <span class="status-badge ${member && member.status === 'approved' ? 'status-approved' : member && member.status === 'rejected' ? 'status-rejected' : 'status-pending'}">
+                                        ${member && member.status ? member.status.charAt(0).toUpperCase() + member.status.slice(1) : 'N/A'}
                                     </span>
                                 </p>
                                 ${member.approvedAt ? 

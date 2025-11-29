@@ -240,7 +240,7 @@ router.get('/test/all', async (req, res) => {
 // =========================
 router.get("/:id", ensureAuthenticated, async (req, res) => {
     try {
-        const member = await Member.findById(req.params.id);
+        const member = await Member.findById(req.params.id).lean();
 
         if (!member) {
             return res.status(404).json({
@@ -249,15 +249,33 @@ router.get("/:id", ensureAuthenticated, async (req, res) => {
             });
         }
 
+        // Ensure all required fields are present with defaults
+        const memberData = {
+            _id: member._id,
+            fullName: member.fullName || 'N/A',
+            email: member.email || 'N/A',
+            phone: member.phone || 'N/A',
+            photo: member.photo || '/images/default-avatar.png',
+            status: member.status || 'pending',
+            memberId: member.memberId || 'N/A',
+            birthDate: member.birthDate || null,
+            birthPlace: member.birthPlace || 'N/A',
+            activity: member.activity || 'N/A',
+            approvedAt: member.approvedAt || null,
+            createdAt: member.createdAt,
+            updatedAt: member.updatedAt
+        };
+
         res.json({
             success: true,
-            member
+            member: memberData
         });
 
-    } catch {
+    } catch (err) {
+        console.error('Error fetching member:', err);
         return res.status(500).json({
             success: false,
-            message: "Server error"
+            message: "Server error: " + (process.env.NODE_ENV === 'development' ? err.message : 'An error occurred')
         });
     }
 });
