@@ -94,7 +94,17 @@ $(document).ready(function() {
         ajax: {
             url: '/api/members',
             type: 'GET',
-            dataSrc: 'data'
+            data: function(d) {
+                // Map DataTables parameters to server-side parameters
+                return {
+                    draw: d.draw,
+                    start: d.start,
+                    length: d.length,
+                    'search[value]': d.search.value,
+                    'order[0][column]': d.order[0].column,
+                    'order[0][dir]': d.order[0].dir
+                };
+            }
         },
         columns: [
             {
